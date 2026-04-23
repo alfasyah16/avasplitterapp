@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ava Dungeon Splitter 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0c10; --surface:#111318; --surface2:#181c24; --surface3:#1e2330;
+    --border:rgba(255,255,255,0.07); --border-hover:rgba(255,255,255,0.15);
+    --gold:#c9a84c; --gold-light:#f0d080; --gold-dim:#7a6030;
+    --silver-light:#b8d8f0; --green:#3dba7a; --green-bg:rgba(61,186,122,0.1);
+    --red:#e05555; --red-bg:rgba(224,85,85,0.08); --amber:#d4924a; --blue:#4a90d4;
+    --text:#e8eaf0; --text-muted:#7a8090; --text-dim:#4a5060;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(74,144,212,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(74,144,212,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  header{border-bottom:1px solid var(--border);background:rgba(10,12,16,0.96);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100;}
+  .header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1200px;margin:0 auto;}
+  .logo{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:.05em;display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:32px;height:32px;background:var(--gold-dim);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .logo span{color:var(--gold);}
+  main{padding:28px 24px;max-width:1200px;margin:0 auto;position:relative;z-index:1;}
+  .session-banner{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 24px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+  .banner-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:.03em;color:var(--gold);}
+  .banner-stats{display:flex;gap:28px;flex-wrap:wrap;}
+  .banner-stat{text-align:center;}
+  .banner-stat .val{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--silver-light);}
+  .banner-stat .lbl{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  @media(max-width:860px){.grid-2{grid-template-columns:1fr;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:visible;}
+  .card-header{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .card-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
+  .card-body{padding:18px;}
+  .input-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-muted);margin-bottom:5px;}
+  .input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  input[type="number"],input[type="text"]{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 11px;font-size:14px;font-family:'Inter',sans-serif;transition:border-color .15s;outline:none;}
+  input[type="number"]:focus,input[type="text"]:focus{border-color:var(--gold);}
+  input::placeholder{color:var(--text-dim);}
+
+  /* Roster */
+  .player-row{display:grid;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .player-row:last-of-type{border-bottom:none;}
+  .player-num{font-size:11px;color:var(--text-dim);text-align:right;padding-top:2px;}
+  .name-wrapper{position:relative;}
+  .player-name-input{background:transparent;border:1px solid transparent;padding:5px 8px;border-radius:6px;color:var(--text);font-size:13px;font-weight:500;font-family:'Inter',sans-serif;width:100%;outline:none;transition:border-color .15s;}
+  .player-name-input:hover{border-color:var(--border);}
+  .player-name-input:focus{border-color:var(--gold);background:var(--surface2);}
+  .autocomplete-list{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface3);border:1px solid var(--border-hover);border-radius:8px;max-height:180px;overflow-y:auto;z-index:200;display:none;}
+  .autocomplete-list.open{display:block;}
+  .ac-item{padding:7px 12px;font-size:13px;cursor:pointer;color:var(--text);}
+  .ac-item:hover,.ac-item.focused{background:var(--surface2);color:var(--gold);}
+  .dg-checkbox{width:28px;height:28px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s;font-size:11px;color:transparent;user-select:none;}
+  .dg-checkbox.checked{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+  .remove-btn{width:26px;height:26px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .12s;flex-shrink:0;}
+  .remove-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-bg);}
+  .dg-header{display:grid;align-items:center;gap:6px;padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+  .dg-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);text-align:center;}
+
+  /* Fees */
+  .fee-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+  .fee-row:last-child{border-bottom:none;}
+  .fee-name{color:var(--text-muted);font-size:13px;}
+  .fee-val-wrap{display:flex;align-items:center;gap:8px;}
+  .fee-value{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;color:var(--text);}
+  .fee-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:8px;font-weight:600;}
+
+  /* Dungeon */
+  .dg-section{margin-bottom:16px;}
+  .dg-section:last-child{margin-bottom:0;}
+  .dg-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .dg-section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);font-weight:600;}
+  .remove-dg-btn{background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:12px;padding:2px 6px;border-radius:4px;}
+  .remove-dg-btn:hover{color:var(--red);}
+
+  /* Summary */
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .sum-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;position:relative;}
+  .sum-card-title{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:5px;font-weight:600;}
+  .sum-card-val{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--silver-light);}
+  .sum-card-row{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;}
+  .sum-info-btn{background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--text-dim);cursor:pointer;font-size:10px;padding:1px 6px;flex-shrink:0;margin-bottom:2px;transition:all .12s;font-family:'Inter',sans-serif;}
+  .sum-info-btn:hover{border-color:var(--blue);color:var(--blue);}
+  /* Summary detail popover */
+  .sum-popover{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface3);border:1px solid var(--border-hover);border-radius:8px;padding:10px 12px;z-index:50;font-size:12px;}
+  .sum-popover.open{display:block;}
+  .sum-pop-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);}
+  .sum-pop-row:last-child{border-bottom:none;font-weight:600;}
+  .sum-pop-lbl{color:var(--text-muted);}
+  .sum-pop-val{font-family:'Rajdhani',sans-serif;font-weight:600;}
+
+  /* Results table */
+  .results-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .results-table th{text-align:left;padding:8px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);border-bottom:1px solid var(--border);font-weight:500;}
+  .results-table th.r{text-align:right;}
+  .results-table td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  .results-table td.r{text-align:right;}
+  .results-table tbody tr:last-child td,.results-table tbody tr:nth-last-child(2).last-data td{border-bottom:none;}
+  .results-table tbody tr:hover td{background:var(--surface2);}
+  .amount-net{color:var(--green);font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;}
+  .dg-pip{display:inline-flex;width:17px;height:17px;border-radius:4px;background:var(--green-bg);border:1px solid var(--green);align-items:center;justify-content:center;font-size:9px;color:var(--green);font-weight:600;margin:0 1px;}
+  .dg-pip.miss{background:var(--surface3);border-color:var(--border);color:var(--text-dim);}
+  .totals-row td{border-top:1px solid var(--border-hover);border-bottom:none;padding-top:12px;}
+
+  /* Role badge */
+  .role-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;}
+  .role-tank{background:rgba(74,144,212,.15);color:var(--blue);border:1px solid rgba(74,144,212,.3);}
+  .role-heal{background:rgba(61,186,122,.12);color:var(--green);border:1px solid rgba(61,186,122,.3);}
+  .role-dps{background:rgba(224,85,85,.12);color:var(--red);border:1px solid rgba(224,85,85,.3);}
+  .role-sup{background:rgba(212,146,74,.12);color:var(--amber);border:1px solid rgba(212,146,74,.3);}
+
+  /* Detail row */
+  .detail-row{display:none;}
+  .detail-row.open{display:table-row;}
+  .detail-inner{padding:10px 14px 12px;border-bottom:1px solid var(--border);background:var(--surface2);}
+  .deduct-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px;}
+  .deduct-item{background:var(--surface3);border-radius:6px;padding:8px 10px;}
+  .deduct-lbl{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+  .deduct-val{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;}
+  .deduct-val.pos{color:var(--gold-light);}
+  .deduct-val.neg{color:var(--red);}
+  .deduct-val.net{color:var(--green);}
+  .expand-btn{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text-dim);cursor:pointer;font-size:11px;padding:2px 8px;transition:all .12s;font-family:'Inter',sans-serif;white-space:nowrap;}
+  .expand-btn:hover{border-color:var(--blue);color:var(--blue);}
+  .expand-btn.open{border-color:var(--blue);color:var(--blue);background:rgba(74,144,212,.08);}
+
+  /* Commands */
+  .command-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-family:'Rajdhani',sans-serif;font-size:14px;letter-spacing:.02em;color:var(--silver-light);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .command-block:last-child{margin-bottom:0;}
+  .role-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;}
+  .role-block:last-child{margin-bottom:0;}
+  .copy-btn{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text-muted);cursor:pointer;font-size:11px;padding:3px 9px;white-space:nowrap;transition:all .12s;font-family:'Inter',sans-serif;flex-shrink:0;}
+  .copy-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .copy-btn.copied{border-color:var(--green);color:var(--green);}
+  .btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .12s;display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;}
+  .btn-gold{background:var(--gold);color:#0a0c10;font-weight:700;font-family:'Rajdhani',sans-serif;font-size:14px;letter-spacing:.03em;}
+  .btn-gold:hover{background:var(--gold-light);}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-muted);}
+  .btn-ghost:hover{border-color:var(--border-hover);color:var(--text);}
+  .btn-blue{background:rgba(74,144,212,.15);border:1px solid rgba(74,144,212,.3);color:var(--blue);}
+  .btn-blue:hover{background:rgba(74,144,212,.25);}
+
+  /* ── RECAP ──────────────────────────────────────────────────────── */
+  .recap-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:500;align-items:center;justify-content:center;padding:16px;}
+  .recap-overlay.open{display:flex;}
+  .recap-panel{background:#0d1016;border:1px solid var(--border-hover);border-radius:14px;width:100%;max-width:820px;max-height:calc(100vh - 32px);overflow-y:auto;position:relative;display:flex;flex-direction:column;}
+  .recap-scroll{padding:24px;flex:1;}
+  .recap-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text-muted);cursor:pointer;font-size:13px;padding:4px 10px;z-index:10;}
+  .recap-close:hover{color:var(--text);}
+  .recap-actions{padding:12px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:#0d1016;border-radius:0 0 14px 14px;flex-shrink:0;}
+
+  /* recap internals */
+  .recap-header{text-align:center;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+  .recap-logo{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:.08em;}
+  .recap-date{font-size:12px;color:var(--text-dim);margin-top:2px;}
+
+  .recap-meta{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+  .recap-meta-item{background:var(--surface2);border-radius:7px;padding:9px 10px;text-align:center;}
+  .recap-meta-item.span2{grid-column:span 2;}
+  .recap-meta-lbl{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+  .recap-meta-val{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--silver-light);}
+
+  .recap-two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  .recap-section-title{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+  .recap-fee-list{display:flex;flex-direction:column;gap:3px;}
+  .recap-fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 8px;background:var(--surface2);border-radius:5px;}
+  .recap-fee-name{color:var(--text-muted);}
+  .recap-fee-val{font-family:'Rajdhani',sans-serif;font-weight:600;color:var(--text);}
+  .recap-dg-list{display:flex;flex-direction:column;gap:3px;}
+  .recap-dg-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 8px;background:var(--surface2);border-radius:5px;}
+
+  .recap-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;}
+  .recap-table th{text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);border-bottom:1px solid var(--border);font-weight:500;}
+  .recap-table th.r{text-align:right;}
+  .recap-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text);}
+  .recap-table td.r{text-align:right;}
+  .recap-table tr:last-child td{border-bottom:none;}
+  .recap-net{color:var(--green);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;}
+  .recap-total-row td{border-top:1px solid var(--border-hover);border-bottom:none;padding-top:8px;font-weight:600;}
+  .recap-dg-pip{display:inline-flex;width:14px;height:14px;border-radius:3px;background:var(--green-bg);border:1px solid var(--green);align-items:center;justify-content:center;font-size:8px;color:var(--green);font-weight:700;margin:0 1px;}
+  .recap-dg-pip.miss{background:var(--surface3);border-color:var(--border);color:var(--text-dim);}
+
+  .recap-cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+  .recap-cmd{background:var(--surface2);border-radius:5px;padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--silver-light);}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--green);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--green);z-index:999;opacity:0;transform:translateY(8px);transition:all .18s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:var(--surface);}
+  ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo"><div class="logo-icon">⚙️</div>Ava Dungeon<span>Splitter</span></div>
+    <div style="font-size:12px;color:var(--text-dim);">2026</div>
+  </div>
+</header>
+<main><div id="app"></div></main>
+
+<div class="recap-overlay" id="recapOverlay" onclick="closeRecapOnBg(event)">
+  <div class="recap-panel" id="recapPanel">
+    <button class="recap-close" onclick="closeRecap()">✕ Close</button>
+    <div class="recap-scroll" id="recapContent"></div>
+    <div class="recap-actions">
+      <button class="btn btn-ghost" style="font-size:12px;" onclick="copyRecapText()">Copy as Text</button>
+      <button class="btn btn-blue" style="font-size:12px;" onclick="printRecap()">Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const NICKNAMES=['BEPO','PICKAWCU','ANDECI','MELLNIZZ','BEETADIN','GHEOMORE','AILTAIR','ADINDAW26','GREEDDYS','MANTRA','HAIKALJOA','CNDHIL','ACRO/YAMAHA/SEASONK','JDMIZU','DROWNSHIELD','ICHYWIDODO','PUNXSO','STR111','SRUL','ESDEATHYA','ELDAPO','ZENTZYIE','YANII0315','BAEKDONGSOO','VROXE','VAAALKYRIE','XBANGHANZX','9ETTHEFAKOUT/XEYR0','DATZ','SINPHACII','FASEH','HOLLOWSECURE','KENNNZ','KNJTXXX','KINGYANTO','BININIZARR','CIJUX','MONTELA','30SEC','NYXQI','ASEPJABUL','BJORGI','BANGERKILLER','CL4NK','EUNHWA','GRIMHORN','HAZELANTIBAN','ITSKY','LIEZI','MARU','BOMSQUAD101','PENJUALTOMAT','PEGUINX','PHOGAENJOYER','PHUONGQS','RAFEINNOCENT','SIKPLE','SRIDEVI','TAMAMZ','AGUNZX','UJANGG','ZUGMA77','ZYRADDD','UNDEADEDGE','CYHLLOE','DIXIETHETWINKIE','FANA','DAGGERUQI2'];
+
+const ROLES=['Tank [ Silver + Map + AE ]','GA [ Rune + Soul + Relic ]','OT [ Tukang Sapu Lantai ]','Heal [ Luxury + Ava Shard ]','SC [ Offhand + Artifact ]','DPS [ Weapon ]','DPS [ Helm ]','DPS [ Armor ]','DPS [ Shoes ]','DPS [ Bag + Cape ]'];
+const ROLE_SHORT=[['Tank','tank'],['GA','sup'],['OT','sup'],['Heal','heal'],['SC','sup'],['DPS','dps'],['DPS','dps'],['DPS','dps'],['DPS','dps'],['DPS','dps']];
+
+const fmt=n=>(n==null||isNaN(n))?'0':Math.round(n).toLocaleString('id-ID');
+const fmtDate=()=>new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+
+const state={
+  players:Array.from({length:10},(_,i)=>({name:'',dg:[1,1],role:i<ROLES.length?i:5})),
+  dungeons:[{chest:0,silver:0},{chest:0,silver:0}],
+  fees:{regear:2500000,splitter:3000000,repair:0,sellDisc:0,mapPrice:0},
+  islands:[{name:'',chest:''}],
+  openDetails:new Set(),
+  openSumDetail:null
+};
+
+// ── Compute ──────────────────────────────────────────────────────────────────
+// Exact formula from spreadsheet:
+// Loot/Disc (V) = Σ (dg_chest / dg_count) for each DG attended
+// W (displayed Loot) = MAX(0, V * (1 - sellDisc))
+// Silver Net (X) = Σ (dg_silver / dg_count) for each DG attended - regear/numP - splitter/numP - repair/numP
+// Split = MAX(0, W + X)
+// Scout fee & Map fee are INFORMATIONAL only — not deducted from Split
+
+function autoFees(numDG,mapPrice){
+  return{scout:Math.round(1500000/10*numDG),map:Math.round((mapPrice||0)/10*numDG)};
+}
+
+function compute(){
+  const{players,dungeons,fees}=state;
+  const numDG=dungeons.length;
+  const af=autoFees(numDG,fees.mapPrice);
+  const regear=fees.regear||0;
+  const splitter=fees.splitter||0;
+  const repair=fees.repair||0;
+  const sellDisc=fees.sellDisc||0;
+
+  // per-DG player counts
+  const dgCounts=dungeons.map((_,di)=>players.reduce((s,p)=>s+(p.dg[di]||0),0));
+
+  // active = players who attend at least 1 DG and have a name
+  const active=players.filter(p=>p.name.trim()&&p.dg.slice(0,numDG).some(v=>v));
+  const numPlayers=active.length;
+  const deductPerPlayer=numPlayers>0?(regear+splitter+repair)/numPlayers:0;
+
+  const results=active.map(p=>{
+    let V=0, silverSum=0;
+    for(let di=0;di<numDG;di++){
+      if(p.dg[di]&&dgCounts[di]>0){
+        V+=dungeons[di].chest/dgCounts[di];
+        silverSum+=dungeons[di].silver/dgCounts[di];
+      }
+    }
+    const W=Math.max(0,V*(1-sellDisc));         // Loot/Disc after discount
+    const X=silverSum-deductPerPlayer;           // Silver Net
+    const split=Math.max(0,W+X);
+    return{...p,lootDisc:W,silverRaw:silverSum,silverNet:X,split,deductPerPlayer};
+  }).sort((a,b)=>b.split-a.split);
+
+  const totalChestGross=dungeons.reduce((s,d)=>s+(d.chest||0),0);
+  const totalSilverGross=dungeons.reduce((s,d)=>s+(d.silver||0),0);
+  const buyerLootTab=totalChestGross*(1-sellDisc);
+  // Silver Net display: silver gross minus Repair only (regear & splitter are per-player deductions handled in split calc)
+  const silverNetPool=Math.max(0,totalSilverGross-repair);
+  // Net Pool = BuyerLootTab + silverNetPool - regear - splitter (the per-player deductions sum)
+  const netPool=Math.max(0,buyerLootTab+silverNetPool-(regear+splitter));
+
+  return{numDG,dgCounts,totalChestGross,totalSilverGross,buyerLootTab,silverNetPool,netPool,af,regear,splitter,repair,sellDisc,results,numPlayers,deductPerPlayer};
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function copyText(text,btn){navigator.clipboard.writeText(String(text)).then(()=>{const o=btn.textContent;btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent=o;btn.classList.remove('copied');},1400);});}
+
+// ── Mutations ────────────────────────────────────────────────────────────────
+function toggleDG(pi,di){state.players[pi].dg[di]=state.players[pi].dg[di]?0:1;render();}
+function addPlayer(){state.players.push({name:'',dg:Array(state.dungeons.length).fill(1),role:5});render();}
+function removePlayer(idx){state.players.splice(idx,1);render();}
+function addDungeon(){state.dungeons.push({chest:0,silver:0});state.players.forEach(p=>p.dg.push(1));render();}
+function removeDungeon(idx){if(state.dungeons.length<=1)return;state.dungeons.splice(idx,1);state.players.forEach(p=>p.dg.splice(idx,1));render();}
+function setDungeon(idx,field,val){state.dungeons[idx][field]=+val||0;render();}
+function setFee(field,val){state.fees[field]=+val||0;render();}
+function setSellDisc(val){state.fees.sellDisc=Math.max(0,Math.min(100,+val||0))/100;render();}
+function setIsland(idx,field,val){state.islands[idx][field]=val;render();}
+function addIsland(){state.islands.push({name:'',chest:''});render();}
+function removeIsland(idx){if(state.islands.length<=1)return;state.islands.splice(idx,1);render();}
+function toggleDetail(idx){state.openDetails.has(idx)?state.openDetails.delete(idx):state.openDetails.add(idx);render();}
+function toggleSumDetail(key){
+  state.openSumDetail=state.openSumDetail===key?null:key;
+  render();
+}
+
+// ── Autocomplete ─────────────────────────────────────────────────────────────
+const ac={open:-1,focused:-1,filtered:[]};
+function openAC(pi,val){const used=new Set(state.players.map((p,i)=>i!==pi?p.name.trim().toLowerCase():''));ac.open=pi;ac.focused=-1;ac.filtered=NICKNAMES.filter(n=>n.toLowerCase().includes(val.toLowerCase())&&!used.has(n.toLowerCase()));renderAC(pi);}
+function closeAC(pi){setTimeout(()=>{if(ac.open===pi){ac.open=-1;const el=document.getElementById('ac-'+pi);if(el)el.classList.remove('open');}},160);}
+function selectAC(pi,name){state.players[pi].name=name;ac.open=-1;render();}
+function renderAC(pi){const el=document.getElementById('ac-'+pi);if(!el)return;if(ac.open!==pi||ac.filtered.length===0){el.classList.remove('open');return;}el.innerHTML=ac.filtered.map((n,i)=>`<div class="ac-item${i===ac.focused?' focused':''}" onmousedown="selectAC(${pi},'${n.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${n}</div>`).join('');el.classList.add('open');}
+function handleKey(e,pi){if(ac.open!==pi)return;if(e.key==='ArrowDown'){e.preventDefault();ac.focused=Math.min(ac.focused+1,ac.filtered.length-1);renderAC(pi);}else if(e.key==='ArrowUp'){e.preventDefault();ac.focused=Math.max(ac.focused-1,-1);renderAC(pi);}else if(e.key==='Enter'&&ac.focused>=0){e.preventDefault();selectAC(pi,ac.filtered[ac.focused]);}else if(e.key==='Escape'){ac.open=-1;const el=document.getElementById('ac-'+pi);if(el)el.classList.remove('open');}}
+function onNameInput(pi,val){state.players[pi].name=val;openAC(pi,val);}
+
+// ── Recap ─────────────────────────────────────────────────────────────────────
+function openRecap(){
+  const c=compute();
+  const{fees,dungeons}=state;
+  const numDG=c.numDG;
+  if(c.results.length===0){showToast('Belum ada player.');return;}
+
+  // Current time WIB (UTC+7)
+  const now=new Date();
+  const wibOptions={timeZone:'Asia/Jakarta',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false};
+  const wibStr=now.toLocaleString('id-ID',wibOptions)+' WIB';
+
+  // Island & chest info block — session-based, with Island:/Chest: labels
+  const filledIslands=state.islands.filter(isle=>isle.name||isle.chest);
+  const islandRows=filledIslands.map(isle=>`
+    <div style="background:var(--surface2);border-radius:7px;padding:9px 12px;margin-bottom:5px;">
+      <div style="display:flex;gap:6px;align-items:baseline;margin-bottom:3px;">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);min-width:44px;">Island</span>
+        <span style="font-size:13px;font-weight:500;color:var(--amber);">${isle.name||'—'}</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:baseline;">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);min-width:44px;">Tab</span>
+        <span style="font-size:12px;color:var(--text-muted);">${isle.chest||'—'}</span>
+      </div>
+    </div>`).join('');
+  const hasIslands=filledIslands.length>0;
+
+  // Dungeon summary rows
+  const dgsHtml=dungeons.map((d,i)=>{
+    const isle=state.islands[i]||{};
+    const label=isle.name?`DG ${i+1} — ${isle.name}`:`DG ${i+1}`;
+    return`<div class="recap-fee-row">
+      <span class="recap-fee-name">${label} <span style="color:var(--text-dim);font-size:10px;">${c.dgCounts[i]}p</span></span>
+      <span style="display:flex;gap:10px;">
+        <span style="font-size:12px;color:var(--text-muted);">Chest <b style="color:var(--gold-light);font-family:'Rajdhani',sans-serif;">${fmt(d.chest)}</b></span>
+        <span style="font-size:12px;color:var(--text-muted);">Silver <b style="color:var(--silver-light);font-family:'Rajdhani',sans-serif;">${fmt(d.silver)}</b></span>
+      </span>
+    </div>`;
+  }).join('');
+
+  // Player split — use standard dg pips for visual, circles only in copy text
+  const playersHtml=c.results.map((p,i)=>{
+    const pips=p.dg.slice(0,numDG).map((v,di)=>`<span class="recap-dg-pip${v?'':' miss'}">${v?di+1:'·'}</span>`).join('');
+    return`<tr>
+      <td style="color:var(--text-dim);font-size:11px;">${i+1}</td>
+      <td style="font-weight:500;font-size:12px;">${p.name}</td>
+      <td>${pips}</td>
+      <td class="r"><span class="recap-net">${fmt(p.split)}</span></td>
+    </tr>`;
+  }).join('');
+
+  const cmdsHtml=c.results.map(p=>`<div class="recap-cmd">!addmoney ${p.name} ${Math.round(p.split)}</div>`).join('');
+
+  document.getElementById('recapContent').innerHTML=`
+    <div class="recap-header">
+      <div class="recap-logo">⚔ LOOTSPLIT RECAP</div>
+      <div class="recap-date">${wibStr}</div>
+    </div>
+
+    <!-- Top stats -->
+    <div class="recap-meta">
+      <div class="recap-meta-item"><div class="recap-meta-lbl">Total DG</div><div class="recap-meta-val">${numDG}</div></div>
+      <div class="recap-meta-item"><div class="recap-meta-lbl">Total Player</div><div class="recap-meta-val">${c.numPlayers}</div></div>
+      <div class="recap-meta-item span2" style="border:1px solid rgba(61,186,122,.3);"><div class="recap-meta-lbl">Net Pool</div><div class="recap-meta-val" style="color:var(--green);">${fmt(c.netPool)}</div></div>
+    </div>
+
+    ${hasIslands?`
+    <div class="recap-section-title">Island Info</div>
+    <div class="recap-fee-list" style="margin-bottom:14px;">${islandRows}</div>`:''}
+
+    <div class="recap-two-col">
+      <div>
+        <div class="recap-section-title">Dungeon Summary</div>
+        <div class="recap-fee-list">${dgsHtml}</div>
+      </div>
+      <div>
+        <div class="recap-section-title">Fee Breakdown</div>
+        <div class="recap-fee-list">
+          <div class="recap-fee-row"><span class="recap-fee-name">Map Fee Base</span><span class="recap-fee-val">${fmt(fees.mapPrice||0)}</span></div>
+          <div class="recap-fee-row"><span class="recap-fee-name">Map Fee (total)</span><span class="recap-fee-val">${fmt(c.af.map)}</span></div>
+          <div class="recap-fee-row"><span class="recap-fee-name">Regear Fee</span><span class="recap-fee-val">${fmt(c.regear)}</span></div>
+          <div class="recap-fee-row"><span class="recap-fee-name">Splitter Fee</span><span class="recap-fee-val">${fmt(c.splitter)}</span></div>
+          <div class="recap-fee-row"><span class="recap-fee-name">Repair</span><span class="recap-fee-val">${fmt(c.repair)||'—'}</span></div>
+          <div class="recap-fee-row"><span class="recap-fee-name">Discount</span><span class="recap-fee-val">${c.sellDisc?((c.sellDisc)*100).toFixed(0)+'%':'—'}</span></div>
+          <div class="recap-fee-row" style="background:var(--surface3);">
+            <span class="recap-fee-name" style="color:var(--text);font-weight:500;">Deduct / Player</span>
+            <span class="recap-fee-val" style="color:var(--red);">-${fmt(c.deductPerPlayer)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="recap-section-title">Loot Overview</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;">
+      <div class="recap-fee-row"><span class="recap-fee-name">Chest Gross</span><span class="recap-fee-val" style="color:var(--gold-light);">${fmt(c.totalChestGross)}</span></div>
+      <div class="recap-fee-row"><span class="recap-fee-name">Chest After Disc.</span><span class="recap-fee-val" style="color:var(--gold-light);">${fmt(c.buyerLootTab)}</span></div>
+      <div class="recap-fee-row"><span class="recap-fee-name">Silver Gross</span><span class="recap-fee-val" style="color:var(--silver-light);">${fmt(c.totalSilverGross)}</span></div>
+      <div class="recap-fee-row"><span class="recap-fee-name">Silver After Repair</span><span class="recap-fee-val" style="color:var(--silver-light);">${fmt(c.silverNetPool)}</span></div>
+    </div>
+
+    <div class="recap-section-title">Player Split</div>
+    <table class="recap-table">
+      <thead><tr>
+        <th>#</th><th>Player</th><th>DGs</th><th class="r">Net Loot</th>
+      </tr></thead>
+      <tbody>${playersHtml}</tbody>
+      <tfoot><tr class="recap-total-row">
+        <td colspan="3" style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em;">Total</td>
+        <td class="r"><span class="recap-net">${fmt(c.results.reduce((s,p)=>s+p.split,0))}</span></td>
+      </tr></tfoot>
+    </table>
+
+    <div class="recap-section-title">Add Balance Commands</div>
+    <div class="recap-cmd-grid">${cmdsHtml}</div>
+  `;
+  document.getElementById('recapOverlay').classList.add('open');
+}
+
+function closeRecap(){document.getElementById('recapOverlay').classList.remove('open');}
+function closeRecapOnBg(e){if(e.target===document.getElementById('recapOverlay'))closeRecap();}
+
+function copyRecapText(){
+  const c=compute();
+  const{fees,dungeons}=state;
+  const numDG=c.numDG;
+  const now=new Date();
+  const wibStr=now.toLocaleString('id-ID',{timeZone:'Asia/Jakarta',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' WIB';
+  const sep='─'.repeat(44);
+  const lines=[
+    `⚔ LOOTSPLIT RECAP`,
+    wibStr,
+    `${numDG} DG  ·  ${c.numPlayers} Players  ·  Net Pool: ${fmt(c.netPool)}`,
+    sep,
+  ];
+  // Island info — session-based with Island:/Chest: labels
+  const filledIsles=state.islands.filter(isle=>isle.name||isle.chest);
+  if(filledIsles.length){
+    filledIsles.forEach(isle=>{
+      lines.push(`Island : ${isle.name||'—'}`);
+      lines.push(`Tab  : ${isle.chest||'—'}`);
+    });
+    lines.push(sep);
+  }
+  // Dungeon summary
+  dungeons.forEach((d,i)=>{
+    lines.push(`DG${i+1} (${c.dgCounts[i]}p)  Chest: ${fmt(d.chest)}  Silver: ${fmt(d.silver)}`);
+  });
+  lines.push(sep);
+  // Fees
+  lines.push(`Map Base: ${fmt(fees.mapPrice||0)}  Map Fee: ${fmt(c.af.map)}  Regear: ${fmt(c.regear)}  Splitter: ${fmt(c.splitter)}`);
+  const extras=[];
+  if(c.repair) extras.push(`Repair: ${fmt(c.repair)}`);
+  if(c.sellDisc) extras.push(`Disc: ${((fees.sellDisc||0)*100).toFixed(0)}%`);
+  if(extras.length) lines.push(extras.join('  '));
+  lines.push(`Deduct/Player: ${fmt(c.deductPerPlayer)}`);
+  lines.push(sep);
+  // Loot overview
+  lines.push(`Chest Gross: ${fmt(c.totalChestGross)}  After Disc: ${fmt(c.buyerLootTab)}`);
+  lines.push(`Silver Gross: ${fmt(c.totalSilverGross)}  After Repair: ${fmt(c.silverNetPool)}`);
+  lines.push(sep);
+  // Player split — circles notation, = separator
+  lines.push(`PLAYER SPLIT`);
+  c.results.forEach((p,i)=>{
+    const circles=p.dg.slice(0,numDG).map(v=>v?'◉':'○').join('');
+    lines.push(`${String(i+1).padStart(2)}. ${p.name}  ${circles}  =  ${fmt(p.split)}`);
+  });
+  lines.push(`TOTAL: ${fmt(c.results.reduce((s,p)=>s+p.split,0))}`);
+  lines.push(sep);
+  lines.push(`ADD BALANCE`);
+  c.results.forEach(p=>lines.push(`!addmoney ${p.name} ${Math.round(p.split)}`));
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>showToast('Recap copied!'));
+}
+
+function printRecap(){
+  const content=document.getElementById('recapContent').innerHTML;
+  const style=document.querySelector('style').textContent;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>LootSplit Recap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>${style} body{background:#0d1016;color:#e8eaf0;font-family:'Inter',sans-serif;font-size:13px;padding:24px;max-width:820px;margin:0 auto;} @media print{body{padding:0;}}</style>
+    </head><body>${content}<script>window.onload=()=>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+// ── Main Render ───────────────────────────────────────────────────────────────
+function render(){
+  const c=compute();
+  const{players,dungeons,fees}=state;
+  const numDG=c.numDG;
+  const dgCols=Array(numDG).fill('28px').join(' ');
+  const gridCols=`20px 1fr ${dgCols} 28px`;
+
+  document.getElementById('app').innerHTML=`
+    <div class="session-banner">
+      <div class="banner-title">💰 LootSplit Session</div>
+      <div class="banner-stats">
+        <div class="banner-stat"><div class="val">${fmt(c.totalChestGross+c.totalSilverGross)}</div><div class="lbl">Total Gross</div></div>
+        <div class="banner-stat"><div class="val">${fmt(c.netPool)}</div><div class="lbl">Net Pool</div></div>
+        <div class="banner-stat"><div class="val">${numDG}</div><div class="lbl">Dungeons</div></div>
+        <div class="banner-stat"><div class="val">${c.numPlayers}</div><div class="lbl">Players</div></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Player</span>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px;" onclick="addPlayer()">+ Add Player</button>
+          </div>
+          <div class="card-body" style="padding:14px 16px;">
+            <div class="dg-header" style="grid-template-columns:${gridCols};">
+              <div></div>
+              <div class="dg-label" style="text-align:left;padding-left:8px;">Nickname</div>
+              ${Array.from({length:numDG},(_,i)=>`<div class="dg-label">D${i+1}</div>`).join('')}
+              <div></div>
+            </div>
+            ${players.map((p,pi)=>`
+              <div class="player-row" style="grid-template-columns:${gridCols};">
+                <div class="player-num">${pi+1}</div>
+                <div class="name-wrapper">
+                  <input class="player-name-input" id="pname-${pi}"
+                    value="${p.name.replace(/"/g,'&quot;')}"
+                    placeholder="Search name..."
+                    autocomplete="off"
+                    oninput="onNameInput(${pi},this.value)"
+                    onkeydown="handleKey(event,${pi})"
+                    onfocus="openAC(${pi},this.value)"
+                    onblur="closeAC(${pi})">
+                  <div class="autocomplete-list" id="ac-${pi}"></div>
+                </div>
+                ${p.dg.slice(0,numDG).map((v,di)=>`<div class="dg-checkbox${v?' checked':''}" onclick="toggleDG(${pi},${di})">${v?'✓':''}</div>`).join('')}
+                <button class="remove-btn" onclick="removePlayer(${pi})" title="Remove">✕</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Fees & Deductions</span></div>
+          <div class="card-body">
+            <div class="fee-section-label">Auto-calculated (info only)</div>
+            <div class="fee-row">
+              <span class="fee-name">Scout Fee <span style="font-size:11px;color:var(--text-dim);">(1.5jt/10 × ${numDG} DG)</span></span>
+              <span class="fee-value">${fmt(c.af.scout)}</span>
+            </div>
+            <div class="fee-row">
+              <span class="fee-name">Map Fee <span style="font-size:11px;color:var(--text-dim);">(${fees.mapPrice?fmt(fees.mapPrice):'Map Price'}/10 × ${numDG} DG)</span></span>
+              <span class="fee-value">${fmt(c.af.map)}</span>
+            </div>
+            <div class="fee-row" style="margin-bottom:14px;">
+              <span class="fee-name" style="font-weight:500;color:var(--text);">Total Fee (Scout + Map)</span>
+              <div class="fee-val-wrap">
+                <span class="fee-value" style="color:var(--gold);">${fmt(c.af.scout+c.af.map)}</span>
+                <button class="copy-btn" onclick="copyText(${c.af.scout+c.af.map},this)">Copy</button>
+              </div>
+            </div>
+
+            <div class="fee-section-label" style="margin-top:4px;">Deducted from Silver Net</div>
+            <div class="fee-row">
+              <span class="fee-name">Regear Fee</span>
+              <span class="fee-value">${fmt(fees.regear)}</span>
+            </div>
+            <div class="fee-row" style="margin-bottom:14px;">
+              <span class="fee-name">Splitter Fee</span>
+              <span class="fee-value">${fmt(fees.splitter)}</span>
+            </div>
+
+            <div class="fee-section-label" style="margin-top:4px;">Editable</div>
+            <div class="input-row" style="margin-bottom:10px;">
+              <div>
+                <label class="input-label">Map Price</label>
+                <input type="number" value="${fees.mapPrice||''}" placeholder="Map Price" onchange="setFee('mapPrice',this.value)">
+              </div>
+              <div>
+                <label class="input-label">Repair Cost</label>
+                <input type="number" value="${fees.repair||''}" placeholder="Repair Cost" onchange="setFee('repair',this.value)">
+              </div>
+            </div>
+            <div class="input-row">
+              <div>
+                <label class="input-label">Sell Discount %</label>
+                <input type="number" value="${((fees.sellDisc||0)*100)||''}" step="0.1" min="0" max="100" placeholder="Sell Discount %" onchange="setSellDisc(this.value)">
+              </div>
+              <div></div>
+            </div>
+
+            <div style="padding-top:12px;margin-top:14px;border-top:1px solid var(--border);">
+              <div class="fee-row">
+                <span class="fee-name" style="font-weight:500;color:var(--text);">Net Pool to Split</span>
+                <span class="fee-value" style="color:var(--green);font-size:18px;">${fmt(c.netPool)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Island Info card — free-form, independent of dungeon count -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Island Info</span>
+            <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px;" onclick="addIsland()">+ Add Island</button>
+          </div>
+          <div class="card-body" style="padding:14px 16px;">
+            ${state.islands.map((isle,i)=>`
+              <div class="dg-section" style="display:grid;grid-template-columns:1fr 1fr 26px;gap:8px;align-items:center;margin-bottom:10px;">
+                <div>
+                  ${i===0?`<label class="input-label">Island</label>`:''}
+                  <input type="text" value="${(isle.name||'').replace(/"/g,'&quot;')}" placeholder="e.g. R E V E R I E" onchange="setIsland(${i},'name',this.value)">
+                </div>
+                <div>
+                  ${i===0?`<label class="input-label">Tab</label>`:''}
+                  <input type="text" value="${(isle.chest||'').replace(/"/g,'&quot;')}" placeholder="e.g. Loot 1 & 2" onchange="setIsland(${i},'chest',this.value)">
+                </div>
+                <button class="remove-btn" onclick="removeIsland(${i})" style="${i===0?'margin-top:18px;':''}" title="Remove">✕</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Dungeon Loots</span>
+            <button class="btn btn-gold" onclick="addDungeon()">+ Add Dungeon</button>
+          </div>
+          <div class="card-body">
+            ${dungeons.map((dg,i)=>{
+              return`
+              <div class="dg-section">
+                <div class="dg-section-head">
+                  <span class="dg-section-title">Dungeon ${i+1} <span style="color:var(--text-dim);font-size:10px;">${c.dgCounts[i]} players</span></span>
+                  ${dungeons.length>1?`<button class="remove-dg-btn" onclick="removeDungeon(${i})">✕ Remove</button>`:''}
+                </div>
+                <div class="input-row">
+                  <div>
+                    <label class="input-label">Chest Loots</label>
+                    <input type="number" value="${dg.chest||''}" placeholder="0" onchange="setDungeon(${i},'chest',this.value)">
+                  </div>
+                  <div>
+                    <label class="input-label">Silver Bag</label>
+                    <input type="number" value="${dg.silver||''}" placeholder="0" onchange="setDungeon(${i},'silver',this.value)">
+                  </div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Summary</span></div>
+          <div class="card-body">
+            <div class="summary-grid">
+              <div class="sum-card">
+                <div class="sum-card-title">Chest Gross</div>
+                <div class="sum-card-val">${fmt(c.totalChestGross)}</div>
+              </div>
+              <div class="sum-card">
+                <div class="sum-card-title">Buyer LootTab</div>
+                <div class="sum-card-row">
+                  <div class="sum-card-val">${fmt(c.buyerLootTab)}</div>
+                  <button class="sum-info-btn" onclick="toggleSumDetail('loottab')">${state.openSumDetail==='loottab'?'▲':'▼'} Rincian</button>
+                </div>
+                <div class="sum-popover${state.openSumDetail==='loottab'?' open':''}">
+                  <div class="sum-pop-row"><span class="sum-pop-lbl">Chest Gross</span><span class="sum-pop-val">${fmt(c.totalChestGross)}</span></div>
+                  <div class="sum-pop-row"><span class="sum-pop-lbl">Sell Discount (${((c.sellDisc||0)*100).toFixed(0)}%)</span><span class="sum-pop-val" style="color:var(--red);">- ${fmt(c.totalChestGross*c.sellDisc)}</span></div>
+                  <div class="sum-pop-row"><span class="sum-pop-lbl" style="color:var(--text);">Buyer LootTab</span><span class="sum-pop-val" style="color:var(--gold-light);">${fmt(c.buyerLootTab)}</span></div>
+                </div>
+              </div>
+              <div class="sum-card">
+                <div class="sum-card-title">Silver Bag Gross</div>
+                <div class="sum-card-val">${fmt(c.totalSilverGross)}</div>
+              </div>
+              <div class="sum-card" style="border-color:rgba(61,186,122,.25);">
+                <div class="sum-card-title">Silver Net</div>
+                <div class="sum-card-row">
+                  <div class="sum-card-val" style="color:var(--green);">${fmt(c.silverNetPool)}</div>
+                  <button class="sum-info-btn" onclick="toggleSumDetail('silvernet')">${state.openSumDetail==='silvernet'?'▲':'▼'} Rincian</button>
+                </div>
+                <div class="sum-popover${state.openSumDetail==='silvernet'?' open':''}">
+                  <div class="sum-pop-row"><span class="sum-pop-lbl">Silver Bag Gross</span><span class="sum-pop-val">${fmt(c.totalSilverGross)}</span></div>
+                  <div class="sum-pop-row"><span class="sum-pop-lbl">Repair Cost</span><span class="sum-pop-val" style="color:var(--red);">- ${fmt(c.repair)}</span></div>
+                  <div class="sum-pop-row"><span class="sum-pop-lbl" style="color:var(--text);">Silver Net</span><span class="sum-pop-val" style="color:var(--green);">${fmt(c.silverNetPool)}</span></div>
+                  <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim);">Regear & Splitter dipotong per-player saat split.</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:10px;padding:12px 13px;background:var(--surface2);border:1px solid rgba(61,186,122,.3);border-radius:8px;position:relative;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:12px;color:var(--text-muted);">Net Pool to Split</span>
+                  <button class="sum-info-btn" onclick="toggleSumDetail('netpool')">${state.openSumDetail==='netpool'?'▲':'▼'} Rincian</button>
+                </div>
+                <span style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--green);">${fmt(c.netPool)}</span>
+              </div>
+              <div class="sum-popover${state.openSumDetail==='netpool'?' open':''}">
+                <div class="sum-pop-row"><span class="sum-pop-lbl">Buyer LootTab</span><span class="sum-pop-val" style="color:var(--gold-light);">${fmt(c.buyerLootTab)}</span></div>
+                <div class="sum-pop-row"><span class="sum-pop-lbl">Silver Net (after repair)</span><span class="sum-pop-val" style="color:var(--silver-light);">${fmt(c.silverNetPool)}</span></div>
+                <div class="sum-pop-row"><span class="sum-pop-lbl">Regear Fee</span><span class="sum-pop-val" style="color:var(--red);">- ${fmt(c.regear)}</span></div>
+                <div class="sum-pop-row"><span class="sum-pop-lbl">Splitter Fee</span><span class="sum-pop-val" style="color:var(--red);">- ${fmt(c.splitter)}</span></div>
+                <div class="sum-pop-row"><span class="sum-pop-lbl" style="color:var(--text);">Net Pool</span><span class="sum-pop-val" style="color:var(--green);">${fmt(c.netPool)}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${c.results.length>0?`
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <span class="card-title">Split Results</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--text-dim);">${c.numPlayers} players · ${numDG} DG</span>
+          <button class="btn btn-blue" onclick="openRecap()" style="padding:5px 12px;font-size:12px;">Lihat Rekap</button>
+        </div>
+      </div>
+      <div style="overflow:hidden;">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Player</th><th>Role</th><th>DGs</th><th class="r">Detail</th><th class="r">Net Loot</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${c.results.map((p,i)=>{
+              const[short,cls]=ROLE_SHORT[p.role]||['DPS','dps'];
+              const isOpen=state.openDetails.has(i);
+              return`
+              <tr>
+                <td style="color:var(--text-dim);font-size:12px;">${i+1}</td>
+                <td style="font-weight:500;font-size:13px;">${p.name}</td>
+                <td><span class="role-badge role-${cls}">${short}</span></td>
+                <td><div style="display:flex;gap:2px;">${p.dg.slice(0,numDG).map((v,di)=>`<div class="dg-pip${v?'':' miss'}">${v?di+1:'·'}</div>`).join('')}</div></td>
+                <td class="r"><button class="expand-btn${isOpen?' open':''}" onclick="toggleDetail(${i})">${isOpen?'▲ Tutup':'▼ Detail'}</button></td>
+                <td class="r"><span class="amount-net">${fmt(p.split)}</span></td>
+              </tr>
+              ${isOpen?`
+              <tr class="detail-row open">
+                <td colspan="6">
+                  <div class="detail-inner">
+                    <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.07em;">Deduction Detail — ${p.name}</div>
+                    <div class="deduct-grid">
+                      <div class="deduct-item">
+                        <div class="deduct-lbl">Chest (after disc)</div>
+                        <div class="deduct-val pos">${fmt(p.lootDisc)}</div>
+                      </div>
+                      <div class="deduct-item">
+                        <div class="deduct-lbl">Silver Raw</div>
+                        <div class="deduct-val pos">${fmt(p.silverRaw)}</div>
+                      </div>
+                      <div class="deduct-item">
+                        <div class="deduct-lbl">Fee Deduct (Regear + Splitter + Repair)</div>
+                        <div class="deduct-val neg">- ${fmt(p.deductPerPlayer)}</div>
+                      </div>
+                      <div class="deduct-item" style="border:1px solid rgba(61,186,122,.3);">
+                        <div class="deduct-lbl">Net Loot</div>
+                        <div class="deduct-val net">${fmt(p.split)}</div>
+                      </div>
+                    </div>
+                    <div style="margin-top:8px;padding:7px 10px;background:var(--surface3);border-radius:6px;font-size:11px;color:var(--text-dim);line-height:2;">
+                      Per-player deduction:&nbsp;
+                      Regear <b style="color:var(--text);">${fmt(c.regear/c.numPlayers)}</b>&nbsp;·&nbsp;
+                      Splitter <b style="color:var(--text);">${fmt(c.splitter/c.numPlayers)}</b>
+                      ${c.repair>0?`&nbsp;·&nbsp; Repair <b style="color:var(--text);">${fmt(c.repair/c.numPlayers)}</b>`:''}
+                    </div>
+                  </div>
+                </td>
+              </tr>`:''}`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr class="totals-row">
+              <td colspan="5" style="color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em;">Total</td>
+              <td class="r"><span class="amount-net">${fmt(c.results.reduce((s,p)=>s+p.split,0))}</span></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Role Assignment</span>
+          <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px;" onclick="copyAllRoles()">Copy All</button>
+        </div>
+        <div class="card-body">
+          ${c.results.map(p=>{
+            const txt=`${ROLES[p.role]||'DPS'} : @${p.name}`;
+            const safe=txt.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return`<div class="role-block"><span style="font-size:13px;">${txt}</span><button class="copy-btn" onclick="copyText('${safe}',this)">Copy</button></div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Add Balance Commands</span>
+          <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px;" onclick="copyAllCmds()">Copy All</button>
+        </div>
+        <div class="card-body">
+          ${c.results.map(p=>{
+            const cmd=`!addmoney ${p.name} ${Math.round(p.split)}`;
+            const safe=cmd.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return`<div class="command-block"><span>${cmd}</span><button class="copy-btn" onclick="copyText('${safe}',this)">Copy</button></div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+    `:`<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:14px;">Enter player names and dungeon loots above to see split results.</div>`}
+  `;
+  if(ac.open>=0)renderAC(ac.open);
+}
+
+window.copyAllRoles=()=>{const c=compute();navigator.clipboard.writeText(c.results.map(p=>`${ROLES[p.role]||'DPS'} : @${p.name}`).join('\n')).then(()=>showToast('Role assignments copied!'));};
+window.copyAllCmds=()=>{const c=compute();navigator.clipboard.writeText(c.results.map(p=>`!addmoney ${p.name} ${Math.round(p.split)}`).join('\n')).then(()=>showToast('All commands copied!'));};
+window.copyText=copyText;window.toggleDG=toggleDG;window.addPlayer=addPlayer;
+window.removePlayer=removePlayer;window.addDungeon=addDungeon;window.removeDungeon=removeDungeon;
+window.setDungeon=setDungeon;window.setFee=setFee;window.setSellDisc=setSellDisc;
+window.setIsland=setIsland;window.addIsland=addIsland;window.removeIsland=removeIsland;
+window.openAC=openAC;window.closeAC=closeAC;window.selectAC=selectAC;
+window.handleKey=handleKey;window.onNameInput=onNameInput;
+window.toggleDetail=toggleDetail;window.toggleSumDetail=toggleSumDetail;window.openRecap=openRecap;
+window.closeRecap=closeRecap;window.closeRecapOnBg=closeRecapOnBg;
+window.copyRecapText=copyRecapText;window.printRecap=printRecap;
+render();
+</script>
+</body>
+</html>
