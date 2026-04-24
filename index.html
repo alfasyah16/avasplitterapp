@@ -186,6 +186,22 @@
   .recap-cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
   .recap-cmd{background:var(--surface2);border-radius:5px;padding:5px 8px;font-family:'Rajdhani',sans-serif;font-size:12px;color:var(--silver-light);}
 
+  /* ── HANDOFF MODAL ──────────────────────────────────────────────── */
+  .handoff-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:600;align-items:center;justify-content:center;padding:20px;}
+  .handoff-overlay.open{display:flex;}
+  .handoff-panel{background:#0d1016;border:1px solid var(--border-hover);border-radius:14px;width:100%;max-width:520px;padding:28px;position:relative;}
+  .handoff-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:.05em;color:var(--gold);margin-bottom:4px;}
+  .handoff-sub{font-size:12px;color:var(--text-dim);margin-bottom:20px;}
+  .handoff-code{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:'Courier New',monospace;font-size:11px;color:var(--silver-light);word-break:break-all;line-height:1.6;max-height:120px;overflow-y:auto;margin-bottom:12px;user-select:all;}
+  .handoff-paste{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;resize:none;height:90px;transition:border-color .15s;margin-bottom:12px;}
+  .handoff-paste:focus{border-color:var(--gold);}
+  .handoff-paste::placeholder{color:var(--text-dim);}
+  .handoff-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .handoff-close{position:absolute;top:14px;right:14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text-muted);cursor:pointer;font-size:13px;padding:4px 10px;}
+  .handoff-close:hover{color:var(--text);}
+  .handoff-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text-dim);font-size:11px;}
+  .handoff-divider::before,.handoff-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
   .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--green);border-radius:10px;padding:11px 18px;font-size:13px;color:var(--green);z-index:999;opacity:0;transform:translateY(8px);transition:all .18s;pointer-events:none;}
   .toast.show{opacity:1;transform:translateY(0);}
   ::-webkit-scrollbar{width:5px;height:5px;}
@@ -197,7 +213,10 @@
 <header>
   <div class="header-inner">
     <div class="logo"><div class="logo-icon">⚙️</div>Ava Dungeon<span>Splitter</span></div>
-    <div style="font-size:12px;color:var(--text-dim);">2026</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="openHandoffLoad()">📥 Muat Sesi</button>
+      <button class="btn btn-gold" style="font-size:12px;padding:6px 14px;" onclick="openHandoffShare()">📤 Bagikan Sesi</button>
+    </div>
   </div>
 </header>
 <main><div id="app"></div></main>
@@ -209,6 +228,33 @@
     <div class="recap-actions">
       <button class="btn btn-ghost" style="font-size:12px;" onclick="copyRecapText()">Copy as Text</button>
       <button class="btn btn-blue" style="font-size:12px;" onclick="printRecap()">Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Handoff Modal -->
+<div class="handoff-overlay" id="handoffOverlay" onclick="closeHandoffOnBg(event)">
+  <div class="handoff-panel">
+    <button class="handoff-close" onclick="closeHandoff()">✕</button>
+
+    <div id="handoffShare" style="display:none;">
+      <div class="handoff-title">Bagikan Sesi</div>
+      <div class="handoff-sub">Kirim kode ini ke Splitter via Discord / WA. Paste 1x, semua data langsung ter-load.</div>
+      <div class="handoff-code" id="handoffCode">—</div>
+      <div class="handoff-actions">
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="closeHandoff()">Tutup</button>
+        <button class="btn btn-gold" style="font-size:13px;" onclick="copyHandoffCode()">Copy Kode</button>
+      </div>
+    </div>
+
+    <div id="handoffLoad" style="display:none;">
+      <div class="handoff-title">Muat Sesi</div>
+      <div class="handoff-sub">Paste kode dari Raid Leader, lalu klik "Muat".</div>
+      <textarea class="handoff-paste" id="handoffPaste" placeholder="Paste kode sesi di sini..."></textarea>
+      <div class="handoff-actions">
+        <button class="btn btn-ghost" style="font-size:12px;" onclick="closeHandoff()">Batal</button>
+        <button class="btn btn-gold" style="font-size:13px;" onclick="loadHandoffCode()">Muat Sesi</button>
+      </div>
     </div>
   </div>
 </div>
@@ -500,6 +546,70 @@ function printRecap(){
     <style>${style} body{background:#0d1016;color:#e8eaf0;font-family:'Inter',sans-serif;font-size:13px;padding:24px;max-width:820px;margin:0 auto;} @media print{body{padding:0;}}</style>
     </head><body>${content}<script>window.onload=()=>window.print();<\/script></body></html>`);
   w.document.close();
+}
+
+// ── Handoff: Encode & Decode ──────────────────────────────────────────────────
+function encodeSession(){
+  const payload={
+    v:1,
+    players:state.players.map(p=>({n:p.name,d:p.dg,r:p.role})),
+    dungeons:state.dungeons.map(d=>({c:d.chest,s:d.silver})),
+    fees:{r:state.fees.regear,sp:state.fees.splitter,re:state.fees.repair,sd:state.fees.sellDisc,mp:state.fees.mapPrice},
+    islands:state.islands.map(i=>({n:i.name,c:i.chest}))
+  };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+
+function decodeSession(code){
+  try{
+    const payload=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if(!payload.v||!payload.players||!payload.dungeons) return false;
+    const numDG=payload.dungeons.length;
+    state.players=payload.players.map(p=>({name:p.n||'',dg:(p.d||[]).slice(0,numDG).concat(Array(Math.max(0,numDG-(p.d||[]).length)).fill(0)),role:p.r??5}));
+    state.dungeons=payload.dungeons.map(d=>({chest:d.c||0,silver:d.s||0}));
+    state.fees={regear:payload.fees.r||0,splitter:payload.fees.sp||0,repair:payload.fees.re||0,sellDisc:payload.fees.sd||0,mapPrice:payload.fees.mp||0};
+    state.islands=(payload.islands||[{n:'',c:''}]).map(i=>({name:i.n||'',chest:i.c||''}));
+    state.openDetails=new Set();
+    state.openSumDetail=null;
+    return true;
+  }catch(e){return false;}
+}
+
+function openHandoffShare(){
+  const code=encodeSession();
+  document.getElementById('handoffCode').textContent=code;
+  document.getElementById('handoffShare').style.display='block';
+  document.getElementById('handoffLoad').style.display='none';
+  document.getElementById('handoffOverlay').classList.add('open');
+}
+
+function openHandoffLoad(){
+  document.getElementById('handoffPaste').value='';
+  document.getElementById('handoffShare').style.display='none';
+  document.getElementById('handoffLoad').style.display='block';
+  document.getElementById('handoffOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('handoffPaste').focus(),100);
+}
+
+function closeHandoff(){document.getElementById('handoffOverlay').classList.remove('open');}
+function closeHandoffOnBg(e){if(e.target===document.getElementById('handoffOverlay'))closeHandoff();}
+
+function copyHandoffCode(){
+  const code=document.getElementById('handoffCode').textContent;
+  navigator.clipboard.writeText(code).then(()=>showToast('Kode sesi berhasil di-copy!'));
+}
+
+function loadHandoffCode(){
+  const code=document.getElementById('handoffPaste').value.trim();
+  if(!code){showToast('Kode tidak boleh kosong.');return;}
+  const ok=decodeSession(code);
+  if(ok){
+    closeHandoff();
+    render();
+    showToast('Sesi berhasil dimuat!');
+  }else{
+    showToast('Kode tidak valid atau rusak.');
+  }
 }
 
 // ── Main Render ───────────────────────────────────────────────────────────────
@@ -845,6 +955,9 @@ window.handleKey=handleKey;window.onNameInput=onNameInput;
 window.toggleDetail=toggleDetail;window.toggleSumDetail=toggleSumDetail;window.openRecap=openRecap;
 window.closeRecap=closeRecap;window.closeRecapOnBg=closeRecapOnBg;
 window.copyRecapText=copyRecapText;window.printRecap=printRecap;
+window.openHandoffShare=openHandoffShare;window.openHandoffLoad=openHandoffLoad;
+window.closeHandoff=closeHandoff;window.closeHandoffOnBg=closeHandoffOnBg;
+window.copyHandoffCode=copyHandoffCode;window.loadHandoffCode=loadHandoffCode;
 render();
 </script>
 </body>
